@@ -49,61 +49,27 @@ uint8_t read_button_debounced(gpio_num_t pin)
 //     }
 // }
 
-// после отпускания кнопки пин имеет неопределенное состояние
-// void app_main(void)
-// {
-//     gpio_set_direction(LED, GPIO_MODE_OUTPUT);
-//     gpio_set_direction(BUTTON, GPIO_MODE_INPUT);
-//     gpio_set_pull_mode(BUTTON, GPIO_FLOATING); 
-
-//     int delay_ms = 500; // 1 Гц мигание
-//     uint8_t button;
-//     uint8_t last_button = 1;
-//     while (1) {
-
-//       //button = gpio_get_level(BUTTON);
-//       button = read_button_debounced(BUTTON);
-//       printf("GPIO state is %d\n", button);
-//       if ((last_button == 1 && button == 0) || (last_button == 0 && button == 1)) 
-//         printf("Кнопка была нажата!\n");
-//           //Обновляем состояние
-//           last_button = button;
-
-//       if(button)
-//         gpio_set_level(LED, 0);
-//       else
-//         gpio_set_level(LED, 1);
-      
-//       vTaskDelay(delay_ms / portTICK_PERIOD_MS);
-//       }
-// }
-
-// через внутренний под регистр, он подтягивает пин к 1 когда кнопка не замкнута
+// мк видит только краткий переход 
 void app_main(void)
 {
     gpio_set_direction(LED, GPIO_MODE_OUTPUT);
     gpio_set_direction(BUTTON, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(BUTTON, GPIO_PULLUP_ONLY); 
+    gpio_set_pull_mode(BUTTON, GPIO_FLOATING); 
 
     int delay_ms = 500; // 1 Гц мигание
     uint8_t button;
     uint8_t last_button = 1;
-    uint8_t fast_mod = 0;
     while (1) {
 
       //button = gpio_get_level(BUTTON);
       button = read_button_debounced(BUTTON);
       printf("GPIO state is %d\n", button);
-      if ((last_button == 1 && button == 0) ){
-        fast_mod = !fast_mod;
-        printf("Режим поменялся!\n");
+      if ((last_button == 1 && button == 0) || (last_button == 0 && button == 1)) 
         printf("Кнопка была нажата!\n");
-      } 
-        
           //Обновляем состояние
           last_button = button;
 
-      if(fast_mod)
+      if(button)
         gpio_set_level(LED, 0);
       else
         gpio_set_level(LED, 1);
@@ -111,3 +77,37 @@ void app_main(void)
       vTaskDelay(delay_ms / portTICK_PERIOD_MS);
       }
 }
+
+// через внутренний под регистр, он подтягивает пин к 1 когда кнопка не замкнута
+// void app_main(void)
+// {
+//     gpio_set_direction(LED, GPIO_MODE_OUTPUT);
+//     gpio_set_direction(BUTTON, GPIO_MODE_INPUT);
+//     gpio_set_pull_mode(BUTTON, GPIO_PULLUP_ONLY); 
+
+//     int delay_ms = 500; // 1 Гц мигание
+//     uint8_t button;
+//     uint8_t last_button = 1;
+//     uint8_t fast_mod = 0;
+//     while (1) {
+
+//       //button = gpio_get_level(BUTTON);
+//       button = read_button_debounced(BUTTON);
+//       printf("GPIO state is %d\n", button);
+//       if ((last_button == 1 && button == 0) ){
+//         fast_mod = !fast_mod;
+//         printf("Режим поменялся!\n");
+//         printf("Кнопка была нажата!\n");
+//       } 
+        
+//           //Обновляем состояние
+//           last_button = button;
+
+//       if(fast_mod)
+//         gpio_set_level(LED, 0);
+//       else
+//         gpio_set_level(LED, 1);
+      
+//       vTaskDelay(delay_ms / portTICK_PERIOD_MS);
+//       }
+// }
