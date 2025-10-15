@@ -1,0 +1,20 @@
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+
+
+#define LED GPIO_NUM_14
+
+void app_main(void)
+{
+
+  gpio_set_direction(LED, GPIO_MODE_OUTPUT);
+  uint32_t led_on = 0;
+  while (true)
+  {
+    led_on = !led_on;
+    gpio_set_level(LED, led_on);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
