@@ -3,9 +3,9 @@
 #include "driver/gpio.h"
 
 // пины подключения светодиодов
-#define     LED_RED     GPIO_NUM_33
-#define     LED_YELLOW  GPIO_NUM_25
-#define     LED_GREEN   GPIO_NUM_26
+#define     LED_RED     GPIO_NUM_4
+#define     LED_YELLOW  GPIO_NUM_16
+#define     LED_GREEN   GPIO_NUM_17
 #define     GPIO_PINS   ((1ULL << LED_RED) | (1ULL << LED_YELLOW) | (1ULL << LED_GREEN))
 
 void app_main(void)
@@ -51,11 +51,9 @@ void app_main(void)
                 gpio_set_level(LED_YELLOW, 0);
                 break;
             case 6:
-                gpio_set_level(LED_RED, 1);
-                break;
-            case 7:
                 gpio_set_level(LED_GREEN, 0);
                 break;
+ 
         }
         vTaskDelay(200 / portTICK_PERIOD_MS);
     }
