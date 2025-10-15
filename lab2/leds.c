@@ -11,17 +11,20 @@
 void app_main(void)
 {
     // объявление структуры конфигурации
-    gpio_config_t io_conf = {};
+   // gpio_config_t io_conf = {};
 
     // задание необходимых свойств
-    io_conf.pin_bit_mask = GPIO_PINS;             // линии
-    io_conf.mode = GPIO_MODE_OUTPUT;              // режим работы - выход
-    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;     // нет подтягивающего резистора
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // нет стягивающего резистора
-    io_conf.intr_type = GPIO_INTR_DISABLE;        // прерывания отключены
+    //io_conf.pin_bit_mask = GPIO_PINS;             // линии
+    //io_conf.mode = GPIO_MODE_OUTPUT;              // режим работы - выход
+    //io_conf.pull_up_en = GPIO_PULLUP_DISABLE;     // нет подтягивающего резистора
+    //io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE; // нет стягивающего резистора
+    //io_conf.intr_type = GPIO_INTR_DISABLE;        // прерывания отключены
 
     // установка конфигурации GPIO
-    gpio_config(&io_conf);
+    //gpio_config(&io_conf);
+gpio_set_direction(LED_RED, GPIO_MODE_OUTPUT);
+gpio_set_direction(LED_YELLOW, GPIO_MODE_OUTPUT);
+gpio_set_direction(LED_GREEN, GPIO_MODE_OUTPUT);
 
     // счетчик итераций
     uint8_t ticks = 0;
