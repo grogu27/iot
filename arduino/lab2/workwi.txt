@@ -1,4 +1,55 @@
 https://wokwi.com/projects/443314529271699457
+
+
+
+// ЦАП по схеме R-2R (4 бита) + чтение через A0
+// Вход: число от 0 до 15 через Serial
+// Выход: напряжение на пинах D2-D5 → измеряется через A0 → выводится в Serial Monitor
+
+const int bitPins[4] = {2, 3, 4, 5}; // D2 - LSB, D5 - MSB
+
+void setup() {
+  Serial.begin(9600);
+  for (int i = 0; i < 4; i++) {
+    pinMode(bitPins[i], OUTPUT);
+  }
+  Serial.println("Введите число от 0 до 15:");
+}
+
+void loop() {
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    int value = input.toInt();
+    if (value >= 0 && value <= 15) {
+      setDAC(value);
+      delay(100); // Дадим время установиться напряжению
+
+      // Считываем напряжение с A0
+      int adcValue = analogRead(A0);
+      float voltage = adcValue * (5.0 / 1023.0); // Преобразуем в вольты
+
+      // Выводим в Serial Monitor
+      Serial.print("Установлено значение: ");
+      Serial.print(value);
+      Serial.print(" -> Ожидаемое напряжение: ");
+      Serial.print((value / 15.0) * 5.0, 2);
+      Serial.print(" В -> Измерено: ");
+      Serial.print(voltage, 2);
+      Serial.println(" В");
+    } else {
+      Serial.println("Ошибка: введите число от 0 до 15.");
+    }
+    Serial.println("Введите новое число:");
+  }
+}
+
+void setDAC(int value) {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(bitPins[i], (value >> i) & 1);
+  }
+}
+
 const int bitPins[4] = {2, 3, 4, 5}; // D2 - LSB, D5 - MSB
 
 void setup() {
