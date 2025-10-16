@@ -1,1 +1,36 @@
 https://wokwi.com/projects/443314529271699457
+const int bitPins[4] = {2, 3, 4, 5}; // D2 - LSB, D5 - MSB
+
+void setup() {
+  Serial.begin(9600);
+  for (int i = 0; i < 4; i++) {
+    pinMode(bitPins[i], OUTPUT);
+  }
+  Serial.println("Введите число от 0 до 15:");
+}
+
+void loop() {
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    int value = input.toInt();
+    if (value >= 0 && value <= 15) {
+      setDAC(value);
+      float voltage = (value / 15.0) * 5.0;
+      Serial.print("Установлено значение: ");
+      Serial.print(value);
+      Serial.print(" -> Ожидаемое напряжение: ");
+      Serial.print(voltage, 2);
+      Serial.println(" В");
+    } else {
+      Serial.println("Ошибка: введите число от 0 до 15.");
+    }
+    Serial.println("Введите новое число:");
+  }
+}
+
+void setDAC(int value) {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(bitPins[i], (value >> i) & 1);
+  }
+}
