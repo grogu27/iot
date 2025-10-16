@@ -1,5 +1,5 @@
 https://wokwi.com/projects/443314529271699457
-
+https://wokwi.com/projects/444935773449161729
 
 
 // ЦАП по схеме R-2R (4 бита) + чтение через A0
