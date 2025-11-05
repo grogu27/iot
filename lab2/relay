@@ -1,0 +1,43 @@
+//(4 лаба с реле) https://wokwi.com/projects/444864406314932225
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+
+#define LED GPIO_NUM_32
+#define RELAY GPIO_NUM_33
+
+void blink_led(uint32_t duration_ms, uint32_t interval_ms) {
+    uint32_t cycles = duration_ms / interval_ms;
+    int led_state = 0;
+    for (uint32_t i=0; i<cycles; i++) {
+        gpio_set_level(LED, led_state);
+        led_state = !led_state;
+        vTaskDelay(interval_ms / portTICK_PERIOD_MS);
+    }
+}
+
+void app_main(void)
+{
+  gpio_set_direction(LED, GPIO_MODE_OUTPUT);
+  gpio_set_direction(RELAY, GPIO_MODE_INPUT_OUTPUT);
+
+  bool relay_state = false;
+  gpio_set_level(RELAY, relay_state);
+
+  while (true)
+  {
+    printf("Rele State: %d\n", relay_state);
+    if(relay_state){
+      blink_led(10000, 200);
+    }
+    else{
+      blink_led(10000, 1000);
+    }
+
+    gpio_set_level(RELAY, !gpio_get_level(RELAY));
+    relay_state = gpio_get_level(RELAY);
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+  }
+}
