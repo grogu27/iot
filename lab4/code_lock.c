@@ -87,3 +87,84 @@ void app_main(void) {
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
+
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 19.2,
+      "left": 14.44,
+      "attrs": { "builder": "esp-idf" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 34.8,
+      "left": -178.6,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton-6mm",
+      "id": "btn1",
+      "top": 106.6,
+      "left": -53.6,
+      "rotate": 90,
+      "attrs": { "color": "green", "xray": "1" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 89.8,
+      "left": 104.75,
+      "rotate": 270,
+      "attrs": { "value": "400" }
+    },
+    { "type": "wokwi-relay-module", "id": "relay1", "top": -38.2, "left": -144, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton-6mm",
+      "id": "btn2",
+      "top": 106.6,
+      "left": -140,
+      "rotate": 90,
+      "attrs": { "color": "green", "xray": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton-6mm",
+      "id": "btn3",
+      "top": 106.6,
+      "left": -111.2,
+      "rotate": 90,
+      "attrs": { "color": "green", "xray": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton-6mm",
+      "id": "btn4",
+      "top": 106.6,
+      "left": -82.4,
+      "rotate": 90,
+      "attrs": { "color": "green", "xray": "1" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "led1:C", "esp:CMD", "black", [ "v0" ] ],
+    [ "r1:2", "led1:A", "red", [ "v-114", "h-144", "v124.8" ] ],
+    [ "btn1:2.r", "esp:CMD", "black", [ "h0.8", "v10" ] ],
+    [ "esp:2", "r1:1", "red", [ "h0" ] ],
+    [ "btn4:2.r", "esp:CMD", "black", [ "v77.6", "h95.45" ] ],
+    [ "btn3:2.r", "esp:CMD", "black", [ "v77.6", "h124.25" ] ],
+    [ "btn2:2.r", "esp:CMD", "black", [ "v77.6", "h153.05" ] ],
+    [ "esp:27", "btn1:1.r", "green", [ "h-28.65", "v19.2", "h-19.2" ] ],
+    [ "esp:14", "btn4:1.r", "green", [ "h-19.05", "v19.2", "h-57.6" ] ],
+    [ "esp:12", "btn3:1.r", "green", [ "h-9.45", "v19.2", "h-96" ] ],
+    [ "esp:13", "btn2:1.r", "green", [ "h-9.45", "v9.6", "h-124.8" ] ],
+    [ "esp:26", "relay1:IN", "yellow", [ "h-19.05", "v-105.6", "h-163.2" ] ],
+    [ "relay1:GND", "esp:CMD", "black", [ "h-38.4", "v220.4", "h19.2" ] ]
+  ],
+  "dependencies": {}
+}
