@@ -1,0 +1,71 @@
+https://wokwi.com/projects/449269602309609473
+
+
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_err.h"
+#include "driver/i2c_master.h"
+#include "driver/gpio.h"
+
+#define I2C_TIMEOUT_VALUE_MS  (50)
+#define BOOT_BUTTON_PIN       GPIO_NUM_0
+
+void app_main(void)
+{
+    // --- Настройка кнопки BOOT (GPIO0) как входа ---
+    gpio_reset_pin(BOOT_BUTTON_PIN);
+    gpio_set_direction(BOOT_BUTTON_PIN, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(BOOT_BUTTON_PIN, GPIO_PULLUP_ONLY); // Кнопка замыкает на GND
+
+    // --- Настройка шины I2C ---
+    i2c_master_bus_config_t i2c_mst_config = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port = I2C_NUM_0,
+        .scl_io_num = GPIO_NUM_22,
+        .sda_io_num = GPIO_NUM_21,
+        .glitch_ignore_cnt = 7,
+        .flags.enable_internal_pullup = false,
+    };
+    i2c_master_bus_handle_t bus_handle;
+    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_mst_config, &bus_handle));
+
+    printf("\n=== I2C Scanner (Press BOOT to scan) ===\n");
+    printf("BOOT = GPIO0 → GND\n\n");
+
+    bool was_pressed = false;
+
+    while (1) {
+        bool is_pressed = (gpio_get_level(BOOT_BUTTON_PIN) == 0);
+
+        // Реагируем на фронт нажатия (чтобы не сканировать 100 раз за одно удержание)
+        if (is_pressed && !was_pressed) {
+            printf("\n[BOOT PRESSED] Scanning I2C bus...\n");
+            printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+
+            for (int i = 0; i < 128; i += 16) {
+                printf("%02x: ", i);
+                for (int j = 0; j < 16; j++) {
+                    uint8_t addr = i + j;
+                    esp_err_t ret = i2c_master_probe(bus_handle, addr, I2C_TIMEOUT_VALUE_MS);
+
+                    if (ret == ESP_OK) {
+                        printf("%02x ", addr);
+                    } else if (ret == ESP_ERR_TIMEOUT) {
+                        printf("UU ");
+                    } else {
+                        printf("-- ");
+                    }
+                }
+                printf("\n");
+            }
+            printf("Scan complete.\n");
+        }
+
+        was_pressed = is_pressed;
+        vTaskDelay(pdMS_TO_TICKS(20)); // антидребезг + экономия CPU
+    }
+
+    // Удаление шины (не достигается, но для чистоты)
+    i2c_del_master_bus(bus_handle);
+}
