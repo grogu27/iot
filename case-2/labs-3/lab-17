@@ -1,1 +1,51 @@
 https://wokwi.com/projects/449720961957385217
+
+#include <Wire.h>
+
+// Адрес датчика MPU6050
+const int MPU_ADDR = 0x68; 
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22); // SDA = 21, SCL = 22
+
+  // Инициализация MPU6050
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x6B);  // Режим питания (PWR_MGMT_1)
+  Wire.write(0);     // Пробуждаем датчик (по умолчанию он спит)
+  byte error = Wire.endTransmission();
+
+  if (error == 0) {
+    Serial.println("I2C Device found: MPU6050 (Acting as Temp Sensor)");
+  } else {
+    Serial.println("Error: MPU6050 not found! Check wiring.");
+    while(1);
+  }
+}
+
+void loop() {
+  // --- 1. Читаем РЕАЛЬНУЮ температуру с MPU6050 ---
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x41); // Регистр температуры (TEMP_OUT_H)
+  Wire.endTransmission(false);
+  
+  // Запрашиваем 2 байта
+  Wire.requestFrom(MPU_ADDR, 2, true);
+  
+  int16_t raw_temp = (Wire.read() << 8) | Wire.read();
+  // Формула из даташита MPU6050: Temp = (Raw / 340.0) + 36.53
+  float real_temp = (raw_temp / 340.0) + 36.53;
+
+
+  // --- 2. Симулируем Влажность и Давление (т.к. датчика нет) ---
+  float sim_humidity = random(4000, 6000) / 100.0; // 40% - 60%
+  float sim_pressure = random(99000, 101000) / 100.0; // ~1000 hPa
+
+  // --- 3. Вывод как в задании ---
+  Serial.printf("Temperature: %.2f C (Real from MPU6050)\n", real_temp);
+  Serial.printf("Humidity:    %.2f %% (Simulated)\n", sim_humidity);
+  Serial.printf("Pressure:    %.2f hPa (Simulated)\n", sim_pressure);
+  Serial.println("-----------------------------------");
+
+  delay(1000);
+}
