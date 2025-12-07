@@ -1,0 +1,70 @@
+https://wokwi.com/projects/449723179260587009
+
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <Arduino.h>
+
+// Используем GPIO 15, как указано в задании
+#define ONE_WIRE_BUS 15
+
+// Максимальное количество датчиков DS18B20 (устанавливаем 3 для выполнения задания)
+#define MAX_SENSORS 3 
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(ONE_WIRE_BUS);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
+
+// Массив для хранения адресов найденных датчиков
+DeviceAddress deviceAddress[MAX_SENSORS];
+int numberOfDevices = 0;
+
+void setup(void) {
+  Serial.begin(115200);
+  Serial.println("DS18B20 (1-Wire) Test");
+  Serial.printf("1-Wire bus installed on GPIO%d\n", ONE_WIRE_BUS);
+  
+  // Start up the library
+  sensors.begin();
+  
+  // Поиск устройств (аналог onewire_new_device_iter)
+  numberOfDevices = sensors.getDeviceCount();
+  Serial.printf("Searching done, %d DS18B20 device(s) found\n", numberOfDevices);
+
+  // Ограничиваемся MAX_SENSORS, если найдено больше
+  if (numberOfDevices > MAX_SENSORS) {
+      numberOfDevices = MAX_SENSORS;
+  }
+
+  // Настройка разрешения (аналог ds18b20_set_resolution)
+  for(int i=0; i < numberOfDevices; i++) {
+    if (sensors.getAddress(deviceAddress[i], i)) {
+        sensors.setResolution(deviceAddress[i], 12); // Установка 12-bit разрешения (DS18B20_RESOLUTION_12B)
+        
+        Serial.printf("Found a DS18B20[%d], address: ", i);
+        // Вывод адреса (аналог next_onewire_device.address)
+        for (uint8_t j = 0; j < 8; j++) {
+            Serial.printf("%02X", deviceAddress[i][j]);
+        }
+        Serial.println();
+    }
+  }
+}
+
+void loop(void) {
+  // Запрос на конвертацию температуры (аналог ds18b20_trigger_temperature_conversion)
+  sensors.requestTemperatures(); 
+  
+  // Чтение температуры (аналог ds18b20_get_temperature)
+  for(int i=0; i < numberOfDevices; i++) {
+    float temperatureC = sensors.getTempCByIndex(i);
+    
+    // Вывод лога (аналог ESP_LOGI)
+    Serial.printf("[INFO]: temperature read from DS18B20[%d]: %.2fC\n", i, temperatureC);
+  }
+
+  // Задержка (аналог vTaskDelay(pdMS_TO_TICKS(1000)))
+  delay(1000); 
+}
