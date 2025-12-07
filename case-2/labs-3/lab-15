@@ -1,0 +1,97 @@
+https://wokwi.com/projects/449665799889266689
+
+#include <Wire.h>
+
+// I2C конфигурация, соответствующая вашим #define в C-коде
+#define I2C_MASTER_SCL_IO 22 // SCL
+#define I2C_MASTER_SDA_IO 21 // SDA
+#define BOOT_PIN          0  // GPIO0 - Встроенная кнопка BOOT
+
+/**
+ * @brief Функция сканирования шины I2C.
+ * Ищет устройства по адресам от 0x01 до 0x77.
+ */
+void i2c_scanner() {
+  byte error, address;
+  int nDevices = 0;
+
+  Serial.println("\n--- Starting I2C Bus Scan ---");
+  // Вывод заголовка таблицы адресов
+  Serial.println("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+
+  // Итерация по всем возможным 7-битным адресам (0x00 - 0x7F)
+  for (int i = 0; i < 128; i += 16) {
+    Serial.printf("%02x: ", i); // Вывод начального адреса строки
+
+    for (int j = 0; j < 16; j++) {
+      address = i + j;
+
+      // Пропускаем зарезервированные адреса (0x00, 0x01, 0x78-0x7F)
+      if (address == 0 || address > 0x77) {
+        Serial.print("-- ");
+        continue;
+      }
+      
+      // Инициация передачи данных по адресу
+      Wire.beginTransmission(address);
+      // Завершение передачи. Возвращает 0, если устройство ответило (ACK)
+      error = Wire.endTransmission(); 
+
+      if (error == 0) {
+        // Устройство найдено
+        Serial.printf("%02x ", address);
+        nDevices++;
+      } else {
+        // Устройство не ответило или ошибка
+        Serial.print("-- ");
+      }
+      // Небольшая задержка для стабильности симулятора
+      delay(1); 
+    }
+    Serial.println();
+  }
+
+  if (nDevices == 0) {
+    Serial.println("\nNo I2C devices found (0 devices)");
+  } else {
+    Serial.printf("\nFound %d device(s)\n", nDevices);
+  }
+  Serial.println("-----------------------------\n");
+}
+
+
+void setup() {
+  // Настройка последовательного порта
+  Serial.begin(115200);
+
+  // Инициализация шины I2C на заданных пинах (SDA, SCL)
+  Wire.begin(I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO); 
+  
+  // Настройка пина BOOT (GPIO0) как вход с подтягивающим резистором.
+  // Кнопка BOOT подтягивает пин к земле (LOW), когда нажата.
+  pinMode(BOOT_PIN, INPUT_PULLUP); 
+
+  Serial.println("I2C Scanner Initialized. Press the BOOT (GPIO0) button to start scanning...");
+}
+
+/**
+ * @brief Бесконечный цикл программы.
+ */
+void loop() {
+  // Проверка состояния кнопки BOOT. Активна при LOW.
+  if (digitalRead(BOOT_PIN) == LOW) {
+    Serial.println("BOOT Button Pressed. Starting I2C Scan...");
+    
+    // Выполнение сканирования шины
+    i2c_scanner();
+
+    // Задержка и ожидание отпускания кнопки для защиты от дребезга и 
+    // предотвращения многократного сканирования за одно нажатие.
+    while (digitalRead(BOOT_PIN) == LOW) {
+      delay(50);
+    }
+  }
+
+  // Небольшая пауза для снижения нагрузки на ЦП/симулятор
+  delay(100); 
+}
